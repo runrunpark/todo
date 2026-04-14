@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth'
+import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { auth, googleProvider } from '../firebase'
 
 const AuthContext = createContext(null)
@@ -8,12 +8,11 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined) // undefined = loading
 
   useEffect(() => {
-    getRedirectResult(auth).catch(() => {})
     return onAuthStateChanged(auth, setUser)
   }, [])
 
   async function login() {
-    await signInWithRedirect(auth, googleProvider)
+    await signInWithPopup(auth, googleProvider)
   }
 
   async function logout() {
