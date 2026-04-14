@@ -7,7 +7,7 @@ export default function LoginScreen() {
     <div className="login-wrap">
       <div className="login-card">
         <div className="login-icon" aria-hidden="true">✓</div>
-        <h1 className="login-title">할 일 목록</h1>
+        <h1 className="login-title">백박 부부의 ToDo List</h1>
         <p className="login-desc">
           Google 계정으로 로그인하면<br />
           어느 기기에서나 할 일을 동기화할 수 있습니다.
