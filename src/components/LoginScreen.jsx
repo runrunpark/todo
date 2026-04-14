@@ -13,7 +13,12 @@ export default function LoginScreen() {
   const [error, setError] = useState('')
 
   function openInChrome() {
-    window.location.href = 'googlechrome://' + currentUrl.replace(/^https?:\/\//, '')
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    if (isIOS) {
+      window.location.href = currentUrl.replace('https://', 'googlechromes://').replace('http://', 'googlechrome://')
+    } else {
+      window.location.href = `intent://${currentUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`
+    }
   }
 
   async function handleLogin() {
