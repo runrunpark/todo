@@ -1,7 +1,41 @@
 import { useAuth } from '../contexts/AuthContext'
 
+function isInAppBrowser() {
+  const ua = navigator.userAgent || ''
+  return /KAKAOTALK|Line\/|Instagram|FBAN|FBAV|Twitter|Naver|DaumApps|MicroMessenger|webview|wv\)/i.test(ua)
+}
+
 export default function LoginScreen() {
   const { login } = useAuth()
+  const inApp = isInAppBrowser()
+  const currentUrl = window.location.href
+
+  function openInChrome() {
+    window.location.href = 'googlechrome://' + currentUrl.replace(/^https?:\/\//, '')
+  }
+
+  if (inApp) {
+    return (
+      <div className="login-wrap">
+        <div className="login-card">
+          <div className="login-icon" aria-hidden="true">⚠️</div>
+          <h1 className="login-title">백&박 할 일 목록</h1>
+          <p className="login-desc">
+            Google 로그인은 카카오톡 등<br />
+            앱 내 브라우저에서 사용할 수 없어요.<br /><br />
+            <strong>Chrome 또는 Safari</strong>에서 열어주세요.
+          </p>
+          <button className="google-btn" onClick={openInChrome}>
+            Chrome으로 열기
+          </button>
+          <p style={{ marginTop: '12px', fontSize: '13px', color: '#888' }}>
+            위 버튼이 안 되면 주소를 복사해 Chrome에 붙여넣으세요.<br />
+            <span style={{ wordBreak: 'break-all', color: '#555' }}>{currentUrl}</span>
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="login-wrap">
