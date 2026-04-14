@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
+import { useAuth } from './contexts/AuthContext'
+import { useTodos } from './hooks/useTodos'
+import LoginScreen from './components/LoginScreen'
 import TodoForm from './components/TodoForm'
 import TodoItem from './components/TodoItem'
 import FilterBar from './components/FilterBar'
 import StatsBar from './components/StatsBar'
 import './App.css'
-
-const STORAGE_KEY = 'claude-todos'
 
 export const FILTERS = {
   ALL: 'all',
@@ -13,55 +14,28 @@ export const FILTERS = {
   COMPLETED: 'completed',
 }
 
-function loadTodos() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 }
 
 export default function App() {
-  const [todos, setTodos] = useState(loadTodos)
+  const { user, logout } = useAuth()
+  const { todos, addTodo, updateTodo, toggleTodo, deleteTodo, clearCompleted } = useTodos(user?.uid)
+
   const [filter, setFilter] = useState(FILTERS.ALL)
   const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [sortBy, setSortBy] = useState('createdAt')
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-  }, [todos])
+  if (user === undefined) {
+    return (
+      <div className="app">
+        <div className="loading-screen" aria-label="로딩 중">
+          <div className="spinner" />
+        </div>
+      </div>
+    )
+  }
 
-  const addTodo = useCallback((data) => {
-    setTodos(prev => [{
-      id: crypto.randomUUID(),
-      text: data.text,
-      priority: data.priority || 'medium',
-      dueDate: data.dueDate || null,
-      completed: false,
-      createdAt: Date.now(),
-    }, ...prev])
-  }, [])
-
-  const updateTodo = useCallback((id, changes) => {
-    setTodos(prev => prev.map(t => t.id === id ? { ...t, ...changes } : t))
-    setEditingId(null)
-  }, [])
-
-  const toggleTodo = useCallback((id) => {
-    setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
-  }, [])
-
-  const deleteTodo = useCallback((id) => {
-    setTodos(prev => prev.filter(t => t.id !== id))
-  }, [])
-
-  const clearCompleted = useCallback(() => {
-    setTodos(prev => prev.filter(t => !t.completed))
-  }, [])
+  if (!user) return <LoginScreen />
 
   const filtered = todos
     .filter(t => {
@@ -78,7 +52,10 @@ export default function App() {
         if (!b.dueDate) return -1
         return new Date(a.dueDate) - new Date(b.dueDate)
       }
-      return b.createdAt - a.createdAt
+      // Firestore serverTimestamp is an object; fall back to 0 while pending
+      const aTime = a.createdAt?.toMillis?.() ?? 0
+      const bTime = b.createdAt?.toMillis?.() ?? 0
+      return bTime - aTime
     })
 
   const stats = {
@@ -96,12 +73,22 @@ export default function App() {
             <h1 className="header-title">할 일 목록</h1>
             <p className="header-subtitle">오늘도 하나씩 해나가요</p>
           </div>
+          <div className="header-user">
+            <img
+              src={user.photoURL}
+              alt={user.displayName}
+              className="user-avatar"
+              referrerPolicy="no-referrer"
+            />
+            <div className="user-info">
+              <span className="user-name">{user.displayName}</span>
+              <button className="logout-btn" onClick={logout}>로그아웃</button>
+            </div>
+          </div>
         </header>
 
         <StatsBar stats={stats} />
-
         <TodoForm onAdd={addTodo} />
-
         <FilterBar
           filter={filter}
           onFilter={setFilter}
@@ -130,10 +117,10 @@ export default function App() {
               key={todo.id}
               todo={todo}
               isEditing={editingId === todo.id}
-              onToggle={() => toggleTodo(todo.id)}
+              onToggle={() => toggleTodo(todo.id, todo.completed)}
               onDelete={() => deleteTodo(todo.id)}
               onStartEdit={() => setEditingId(editingId === todo.id ? null : todo.id)}
-              onUpdate={(changes) => updateTodo(todo.id, changes)}
+              onUpdate={(changes) => { updateTodo(todo.id, changes); setEditingId(null) }}
               onCancelEdit={() => setEditingId(null)}
             />
           ))}
