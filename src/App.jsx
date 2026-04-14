@@ -70,7 +70,7 @@ export default function App() {
         <header className="header">
           <div className="header-icon" aria-hidden="true">✓</div>
           <div className="header-text">
-            <h1 className="header-title">백박 부부의 ToDo List</h1>
+            <h1 className="header-title">백&박 할 일 목록</h1>
             <p className="header-subtitle">오늘도 하나씩 해나가요</p>
           </div>
           <div className="header-user">
