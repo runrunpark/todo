@@ -5,6 +5,8 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
+const SHARED_COLLECTION = 'todos'
+
 export function useTodos(uid) {
   const [todos, setTodos] = useState([])
 
@@ -12,7 +14,7 @@ export function useTodos(uid) {
     if (!uid) { setTodos([]); return }
 
     const q = query(
-      collection(db, 'users', uid, 'todos'),
+      collection(db, SHARED_COLLECTION),
       orderBy('createdAt', 'desc')
     )
     return onSnapshot(q, snap => {
@@ -21,8 +23,8 @@ export function useTodos(uid) {
   }, [uid])
 
   const ref = useCallback(
-    () => collection(db, 'users', uid, 'todos'),
-    [uid]
+    () => collection(db, SHARED_COLLECTION),
+    []
   )
 
   const addTodo = useCallback(async (data) => {
@@ -36,24 +38,24 @@ export function useTodos(uid) {
   }, [ref])
 
   const updateTodo = useCallback(async (id, changes) => {
-    await updateDoc(doc(db, 'users', uid, 'todos', id), changes)
-  }, [uid])
+    await updateDoc(doc(db, SHARED_COLLECTION, id), changes)
+  }, [])
 
   const toggleTodo = useCallback(async (id, completed) => {
-    await updateDoc(doc(db, 'users', uid, 'todos', id), { completed: !completed })
-  }, [uid])
+    await updateDoc(doc(db, SHARED_COLLECTION, id), { completed: !completed })
+  }, [])
 
   const deleteTodo = useCallback(async (id) => {
-    await deleteDoc(doc(db, 'users', uid, 'todos', id))
-  }, [uid])
+    await deleteDoc(doc(db, SHARED_COLLECTION, id))
+  }, [])
 
   const clearCompleted = useCallback(async () => {
     const batch = writeBatch(db)
     todos.filter(t => t.completed).forEach(t => {
-      batch.delete(doc(db, 'users', uid, 'todos', t.id))
+      batch.delete(doc(db, SHARED_COLLECTION, t.id))
     })
     await batch.commit()
-  }, [uid, todos])
+  }, [todos])
 
   return { todos, addTodo, updateTodo, toggleTodo, deleteTodo, clearCompleted }
 }
