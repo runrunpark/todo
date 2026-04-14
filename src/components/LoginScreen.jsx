@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
 function isInAppBrowser() {
@@ -9,9 +10,19 @@ export default function LoginScreen() {
   const { login } = useAuth()
   const inApp = isInAppBrowser()
   const currentUrl = window.location.href
+  const [error, setError] = useState('')
 
   function openInChrome() {
     window.location.href = 'googlechrome://' + currentUrl.replace(/^https?:\/\//, '')
+  }
+
+  async function handleLogin() {
+    setError('')
+    try {
+      await login()
+    } catch (e) {
+      setError(e.message || '로그인 실패')
+    }
   }
 
   if (inApp) {
@@ -46,7 +57,7 @@ export default function LoginScreen() {
           Google 계정으로 로그인하면<br />
           어느 기기에서나 할 일을 동기화할 수 있습니다.
         </p>
-        <button className="google-btn" onClick={login}>
+        <button className="google-btn" onClick={handleLogin}>
           <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -55,6 +66,7 @@ export default function LoginScreen() {
           </svg>
           Google로 로그인
         </button>
+        {error && <p style={{ color: 'red', marginTop: '12px', fontSize: '13px' }}>{error}</p>}
       </div>
     </div>
   )
