@@ -1,7 +1,16 @@
+import { useState } from 'react'
+
 export default function FilterBar({
   filter, onFilter, search, onSearch,
   sortBy, onSort, filters, hasCompleted, onClearCompleted
 }) {
+  const [confirmClear, setConfirmClear] = useState(false)
+
+  function handleClearCompleted() {
+    onClearCompleted()
+    setConfirmClear(false)
+  }
+
   return (
     <div className="filter-bar">
       <div className="filter-top">
@@ -60,9 +69,17 @@ export default function FilterBar({
         </div>
 
         {hasCompleted && (
-          <button className="clear-btn" onClick={onClearCompleted}>
-            완료 항목 삭제
-          </button>
+          confirmClear ? (
+            <div className="confirm-clear">
+              <span className="confirm-msg">정말 삭제하시겠습니까?</span>
+              <button className="btn-confirm-yes" onClick={handleClearCompleted}>삭제</button>
+              <button className="btn-confirm-no" onClick={() => setConfirmClear(false)}>취소</button>
+            </div>
+          ) : (
+            <button className="clear-btn" onClick={() => setConfirmClear(true)}>
+              완료 항목 삭제
+            </button>
+          )
         )}
       </div>
     </div>

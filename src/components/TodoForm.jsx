@@ -14,6 +14,14 @@ export default function TodoForm({ onAdd }) {
 
   const today = new Date().toISOString().split('T')[0]
 
+  function setQuickDate(type) {
+    const d = new Date()
+    if (type === 'daily') d.setDate(d.getDate() + 1)
+    else if (type === 'weekly') d.setDate(d.getDate() + 7)
+    else if (type === 'monthly') d.setMonth(d.getMonth() + 1)
+    setDueDate(d.toISOString().split('T')[0])
+  }
+
   function handleSubmit(e) {
     e.preventDefault()
     const trimmed = text.trim()
@@ -69,22 +77,29 @@ export default function TodoForm({ onAdd }) {
               </label>
             ))}
           </div>
-          <label className="date-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            <input
-              type="date"
-              value={dueDate}
-              min={today}
-              onChange={e => setDueDate(e.target.value)}
-              className="date-input"
-              aria-label="마감일"
-            />
-          </label>
+          <div className="date-row">
+            <label className="date-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <input
+                type="date"
+                value={dueDate}
+                min={today}
+                onChange={e => setDueDate(e.target.value)}
+                className="date-input"
+                aria-label="마감일"
+              />
+            </label>
+            <div className="quick-date-btns">
+              <button type="button" className="quick-date-btn" onClick={() => setQuickDate('daily')}>매일</button>
+              <button type="button" className="quick-date-btn" onClick={() => setQuickDate('weekly')}>매주</button>
+              <button type="button" className="quick-date-btn" onClick={() => setQuickDate('monthly')}>매월</button>
+            </div>
+          </div>
         </div>
       )}
     </form>
